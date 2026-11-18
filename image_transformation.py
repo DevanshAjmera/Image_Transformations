@@ -2,7 +2,7 @@ import numpy as np
 import streamlit as st
 from PIL import Image, ImageOps
 
-MAX_SIZE = 300 # longest side of the image in pixels
+MAX_SIZE = 1000 # longest side of the image in pixels
 
 
 # ---------- 1. Image -> grayscale 2D matrix ----------
