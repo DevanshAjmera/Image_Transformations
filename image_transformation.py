@@ -67,12 +67,18 @@ def apply_transform(img, M):
 def camera_specs(file):
     img = Image.open(file)
     exif = img.getexif()
+    exif_ifd = exif.get_ifd(34665)
     st.subheader("Camera Specifications")
-    specs = {272: "Camera Model", 34855: "ISO", 37386: "Focal Length"}
+    specs = {
+        "Camera model": exif.get(272),
+        "ISO speed": exif_ifd.get(34855),
+        "Focal length": exif_ifd.get(37386)}
 
-    for tag, name in specs.items():
-        value = exif.get(tag)
+    for name, value in specs.items():
         if value is not None:
+            if name == "Focal length":
+                value = float(value)
+                value = f"{value:g} mm"
             st.write(f"**{name}:** {value}")
         else:
             st.write(f"**{name}:** Not available")
