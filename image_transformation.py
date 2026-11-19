@@ -55,7 +55,7 @@ def apply_transform(img, M):
 # Streamlit code
 st.title("Image Transformations")
 
-file = st.sidebar.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
 if file is None:
     st.info("pls Upload photo")
     st.stop()
