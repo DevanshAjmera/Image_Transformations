@@ -1,60 +1,53 @@
 import numpy as np
 import streamlit as st
-from PIL import Image, ImageOps
+from PIL import Image
 
-MAX_SIZE = 1000 # longest side of the image in pixels
-
-
-# ---------- 1. Image -> grayscale 2D matrix ----------
+max_size = 1000
 def load_gray_matrix(file):
-    img = ImageOps.exif_transpose(Image.open(file)).convert("RGB")  # fix phone rotation
-    img.thumbnail((MAX_SIZE, MAX_SIZE))              # resize first, keeps aspect ratio
+    img = Image.open(file).convert('RGB')
+    img.thumbnail((max_size, max_size))
     rgb = np.array(img, dtype=float)
     r =  rgb[:, :, 0]
     g = rgb[:, :, 1]
     b = rgb[:, :, 2]
     gray = 0.299 * r+ 0.587 *g  + 0.114 *b 
     return gray.astype(np.uint8)
-
-
-# ---------- 2. Transformation matrices (3x3) ----------
+    
 def translation_matrix(tx, ty):
-    return np.array([[1, 0, tx],
+    translation = np.array([[1, 0, tx],
                      [0, 1, ty],
                      [0, 0, 1]], dtype=float)
-
+    return translation
 
 def scaling_matrix(k):
-    return np.array([[k, 0, 0],
+    scaling = np.array([[k, 0, 0],
                      [0, k, 0],
                      [0, 0, 1]], dtype=float)
-
+    return scaling
 
 def rotation_matrix(angle):
     a = np.radians(angle)
     c, s = np.cos(a), np.sin(a)
-    return np.array([[c,  s, 0],
+    rotation = np.array([[c,  s, 0],
                      [-s, c, 0],
                      [0,  0, 1]])
+    return rotation
 
 
 def around_center(M, h, w):
-    """Make M act around the image centre: move centre to origin, apply M, move back."""
     cx, cy = w / 2, h / 2
-    return translation_matrix(cx, cy) @ M @ translation_matrix(-cx, -cy)
+    transformed = translation_matrix(cx, cy) @ M @ translation_matrix(-cx, -cy)
+    return transformed
 
-
-# ---------- 3. Apply a transformation to the image ----------
 def apply_transform(img, M):
     h, w = img.shape
-    out = np.zeros_like(img)                 # black canvas
+    out = np.zeros_like(img)
     M_inv = np.linalg.inv(M)
     for y in range(h):
         for x in range(w):
-            # For each output pixel, find which input pixel lands here
             sx, sy, _ = M_inv @ [x, y, 1]
             sx, sy = round(sx), round(sy)
-            if 0 <= sx < w and 0 <= sy < h:  # only copy if inside the original image
+            if 0 <= sx < w and 0 <= sy < h:
                 out[y, x] = img[sy, sx]
     return out
 
